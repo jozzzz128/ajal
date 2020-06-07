@@ -24,11 +24,10 @@ app.get('/', (req, res) => {
     res.status(200).json({ code: 200, message: 'Welcome to Ajal' });
 });
 /*RUTAS*/
-app.use("/employees", employees);
+/*app.use("/employees", employees);
 app.use("/tokens", tokens);
 app.use(auth);
-
-app.use(notFound);
+app.use(notFound);*/
 
 
 app.listen(process.env.PORT || 3000, ()=>{
