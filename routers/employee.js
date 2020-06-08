@@ -1,108 +1,70 @@
 const express = require('express');
 const emplo = express.Router();
 const db = require('../config/database');
+const hash = require('../middleware/hash');
 
 //Mostrar la informacion 
 emplo.get("/", async (req, res) => {
-    const query = "SELECT * FROM empleados";
+    const query = "SELECT nombre, apellidos, telefono, email, direccion, estado FROM empleados";
     const rows = await db.query(query);
     return res.status(200).json({ code:200, message: rows});
 });
 
 //Actualizar la informacion de un empleado
-emplo.patch("/:id([0-9]{1,3})", async(req, res, next) => {
-    if (req.body.atributo = 'nombre')
-    {
-        let query = `UPDATE empleados SET nombre='${req.body.nombre}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+emplo.patch("/:id([0-9]{1,3})", async(req, res) => {
+    const {nombre, apellidos, telefono, email, direccion, estado, admin, password} = req.body;
+    if(!nombre && !apellidos && !telefono && !email && !direccion && !estado && !admin && !password) return res.status(500).json({ code: 500, message: "Campos incompletos" });
+    let rows;
+    try {
+        //Campos a Actualizar
+        if(nombre){
+            let query = `UPDATE empleados SET nombre='${nombre}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'apellidos'){
-        let query = `UPDATE empleados SET apellidos='${req.body.apellidos}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if(apellidos){
+            let query = `UPDATE empleados SET apellidos='${apellidos}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'telefono'){
-        let query = `UPDATE empleados SET telefono='${req.body.apellidos}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if(telefono){
+            let query = `UPDATE empleados SET telefono='${telefono}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'email'){
-        let query = `UPDATE empleados SET email='${req.body.email}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if (email){
+            let query = `UPDATE empleados SET email='${email}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'email'){
-        let query = `UPDATE empleados SET email='${req.body.email}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if(direccion){
+            let query = `UPDATE empleados SET direccion='${direccion}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'direccion'){
-        let query = `UPDATE empleados SET direccion='${req.body.direccion}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if(estado){
+            let query = `UPDATE empleados SET estado='${estado}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'estado'){
-        let query = `UPDATE empleados SET estado='${req.body.estado}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if(admin){
+            let query = `UPDATE empleados SET admin='${admin}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
-    }
-    else if(req.body.atributo == 'admin'){
-        let query = `UPDATE empleados SET admin='${req.body.admin}' WHERE idEmpleado=${req.params.id};`;
-        const rows = await db.query(query);
-
-        if (rows.affectedRows == 1)
-        {
-            return res.status(200).json({ code: 200, message: "Nombre de empleado actualizado correctamente"});
+        if(password){
+            let query = `UPDATE empleados SET password='${hash(password)}' WHERE idEmpleado=${req.params.id};`;
+            rows = await db.query(query);
         }
-        return res.status(500).json({ code: 500, message: "Ocurrio un error" });
+        if(rows.affectedRows != 1) return res.status(200).json({ code: 500, message: "Ocurrio un error" });
+    }catch(e){
+        console.log(e);
+        return res.status(200).json({ code: 500, message: "Ocurrio un error" });
     }
-    return res.status(500).json({ code: 500, message: "Campos incompletos" });
+    return res.status(200).json({ code: 200, message: "Campos actualizados correctamente"});
 });
 
-emplo.delete("/:id([0-9]{1,3})", async(req, res, next) => {
+emplo.delete("/:id([0-9]{1,3})", async(req, res) => {
     const query = `DELETE FROM empleados WHERE idEmpleado=${req.params.id}`
     const rows = await db.query(query);
     if (rows.affectedRows == 1) 
     {
         return res.status(200).json({ code: 200, message: "Empleado Borrado Correctamente" })
     }
-    return res.status(404).json({ code: 404, message: "Empleado no encontrado" });
+    return res.status(200).json({ code: 404, message: "Empleado no encontrado" });
 });
 
 
