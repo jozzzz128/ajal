@@ -7,7 +7,7 @@ const hash = require('../middleware/hash');
 emplo.get("/", async (req, res) => {
     const query = "SELECT nombre, apellidos, telefono, email, direccion, estado FROM empleados";
     const rows = await db.query(query);
-    return res.status(200).json({ code:200, message: rows});
+    return res.status(200).json({ code:200, message: 'Información de empleados cargada exitosamente', employees: rows});
 });
 
 //Actualizar la informacion de un empleado

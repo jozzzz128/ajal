@@ -8,10 +8,11 @@ const employee = require('./routers/employee');
 //Middleware
 const notFound = require('./middleware/notFound');
 const auth = require('./middleware/auth');
+const cors = require('./middleware/cors');
 const index = require('./middleware/index');
 const database = require('./routers/database');
 
-//app.use(cors);
+app.use(cors);
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

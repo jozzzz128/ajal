@@ -5,8 +5,9 @@ const db = require('../config/database');
 const hash = require('../middleware/hash'); 
 
 //Registrar un nuevo usuario
-user.post("/signin", async (req, res, next) => {
+user.post("/register", async (req, res, next) => {
     const { nombre, apellidos, telefono, email, direccion, estado, admin, password } = req.body;
+    console.log(req.body);
 
     if(nombre && apellidos && telefono && email && direccion && estado && admin && password)
     {
@@ -34,7 +35,7 @@ user.post("/login", async(req, res, next) => {
                 idEmpleado: rows[0].idEmpleado,
                 email: rows[0].email
             }, "debugkey");
-            return res.status(200).json({ code: 200, message: token });
+            return res.status(200).json({ code: 200, message: 'Inicio de sesión exitoso', token: token });
         }
     } catch (e){console.log(e);} return res.status(200).json({ code: 401, message: "Usuario y/o password incorrectos"});
     

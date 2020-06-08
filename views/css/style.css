@@ -1,0 +1,100 @@
+*{
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    font-family: 'Raleway', sans-serif;
+    box-sizing: border-box;
+}
+
+body{
+    min-width: 100%;
+    min-height: 100vh;
+    background: #191919;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body .form{
+    border: 1px solid #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+}
+
+body .form label{
+    display: block;
+    text-transform: uppercase;
+    font-size: 15px;
+    font-weight: bolder;
+}
+
+body .form input{
+    outline: 0px;
+    font-size: 16px;
+    background: transparent;
+    border: 0px;
+    padding: 10px;
+    padding-left: 0px;
+    border-bottom:1px solid #ccc;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+body .form .b-cont{
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+body .form .b-cont button{
+    outline: 0px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 16px;
+    border: 0px;
+    background: #333;
+    width: 100%;
+}
+
+body .form .b-cont button:nth-child(2){
+    margin-left: 15px;
+}
+
+body .table{
+    max-width: 1300px;
+    padding: 20px;
+    border: 1px solid #fff;
+    border-radius: 10px;
+}
+
+body .table ul{
+    width: 100%;
+}
+
+body .table ul:first-child{
+    font-weight: bolder;
+    text-transform: capitalize;
+}
+
+body .table ul:first-child li{
+    padding: 10px;
+}
+
+body .table ul li{
+    width: 180px;
+    display: inline-flex;
+}
+
+body .table ul li input{
+    background: transparent;
+    color: #fff;
+    border: 0px;
+    font-size: 18px;
+    outline: 0px;
+    width: 100%;
+    padding: 10px;
+}
