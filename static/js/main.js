@@ -3,10 +3,13 @@
 window.addEventListener("load", async ()=>{
 
     let body = document.querySelector("body");
+    setTimeout(()=>{
+        body.style.overflow = "auto";
+    },1000);
 
     const db = await axios({
         method: 'get',
-        url: 'http://localhost:3000/'
+        url: './users/login'
     });
     if(db.data.code == 0) createDBform();
     else createLoginform();
@@ -202,21 +205,41 @@ window.addEventListener("load", async ()=>{
         let form = document.createElement("div");
             form.classList.add("form");
             form.id = "db-form";
-            for (let i = 0; i < 4; i++) {
-                let label = document.createElement("label");
-                    label.for = ids[i];
-                    label.innerHTML = ids[i]+': ';
-                let input = document.createElement("input");
-                    input.type = "text";
-                    input.id = ids[i];
-                    input.value = defVals[i];
-                form.append(label);
-                form.append(input);
-            }
-            let submit = document.createElement("button"); 
-                submit.addEventListener("click", loadDB);
-                submit.innerHTML = 'Enviar';
-            form.append(submit);
+            let title = document.createElement("h2");
+                title.innerHTML = 'Ajal System';
+                title.classList.add("title");
+                let subtitle = document.createElement("span");
+                    subtitle.classList.add("subtitle");
+                    subtitle.innerHTML = 'Conexión a la base de datos';
+                title.append(subtitle);
+            form.append(title);
+            let cont = document.createElement("div");
+                cont.classList.add("cont");
+                    let icon = document.createElement("span");
+                    icon.classList.add("icon-database");
+                cont.append(icon);
+                let info = document.createElement("div");
+                    info.classList.add("info");
+                    for (let i = 0; i < 4; i++) {
+                        let label = document.createElement("label");
+                            label.for = ids[i];
+                            label.innerHTML = ids[i]+': ';
+                        let input = document.createElement("input");
+                            input.type = "text";
+                            input.id = ids[i];
+                            input.value = defVals[i];
+                        info.append(label);
+                        info.append(input);
+                    }
+                    let buttonCont = document.createElement("div");
+                        buttonCont.classList.add("b-cont"); 
+                        let submit = document.createElement("button"); 
+                            submit.addEventListener("click", loadDB);
+                            submit.innerHTML = 'Enviar Información';
+                        buttonCont.append(submit);
+                    info.append(buttonCont);
+                cont.append(info);
+            form.append(cont);
         body.append(form);
     }
     //Comprobar formulario base de datos

@@ -9,19 +9,22 @@ const employee = require('./routers/employee');
 const notFound = require('./middleware/notFound');
 const auth = require('./middleware/auth');
 const cors = require('./middleware/cors');
-const index = require('./middleware/index');
 const database = require('./routers/database');
+
+app.set("view engine","ejs");
 
 app.use(cors);
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+/*--STAIC ROUTES--*/
+app.use('/static',express.static(__dirname +'/static'));
 
 /*--ROUTES--*/
+app.get('/', (req, res) => { res.render('index'); });
 //If database is not loaded
 app.use(database);
 //If database has been registered
-app.get('/', index);
 app.use('/user', user);
 
 app.use(auth);
