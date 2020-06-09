@@ -9,7 +9,8 @@ window.addEventListener("load", async ()=>{
 
     const db = await axios({
         method: 'get',
-        url: './users/login'
+        url: './users/login',
+        data: {}
     });
     if(db.data.code == 0) createDBform();
     else createLoginform();
@@ -82,10 +83,10 @@ window.addEventListener("load", async ()=>{
                 buttonCont.classList.add("b-cont"); 
                 let logButton = document.createElement("button"); 
                     logButton.innerHTML = 'Iniciar Sesión';
-                    logButton.addEventListener("click", loadLogin);
+                    clickEventHandler(logButton, loadLogin);
                 let signButton = document.createElement("button"); 
                     signButton.innerHTML = 'Registrarse';
-                    signButton.addEventListener("click", ()=>{
+                    clickEventHandler(signButton, ()=>{
                         deleteForm();
                         createRegisterForm();
                     });
@@ -159,13 +160,13 @@ window.addEventListener("load", async ()=>{
 
             let logButton = document.createElement("button"); 
                 logButton.innerHTML = 'Iniciar Sesión';
-                logButton.addEventListener("click", ()=>{
+                clickEventHandler(logButton, ()=>{
                     deleteForm();
                     createLoginform();
                 });
             let signButton = document.createElement("button"); 
                 signButton.innerHTML = 'Registrarse';
-                signButton.addEventListener("click", loadRegister);
+                clickEventHandler(signButton, loadRegister);
             form.append(logButton);
             form.append(signButton);
         body.append(form);
@@ -204,6 +205,7 @@ window.addEventListener("load", async ()=>{
         let defVals = ["localhost", "root", " ", "ajal"];
         let form = document.createElement("div");
             form.classList.add("form");
+            form.classList.add("off");
             form.id = "db-form";
             let title = document.createElement("h2");
                 title.innerHTML = 'Ajal System';
@@ -234,13 +236,22 @@ window.addEventListener("load", async ()=>{
                     let buttonCont = document.createElement("div");
                         buttonCont.classList.add("b-cont"); 
                         let submit = document.createElement("button"); 
-                            submit.addEventListener("click", loadDB);
+                            clickEventHandler(submit, loadDB);
                             submit.innerHTML = 'Enviar Información';
                         buttonCont.append(submit);
                     info.append(buttonCont);
                 cont.append(info);
             form.append(cont);
         body.append(form);
+        //Animations
+        setTimeout(()=>{
+            let form  = document.querySelector("body .form");
+                form.classList.add("margin");
+                setTimeout(()=>{
+                        form.classList.remove("margin");
+                        form.classList.remove("off");
+                },300);
+        },300);
     }
     //Comprobar formulario base de datos
     function loadDB(){
@@ -251,7 +262,7 @@ window.addEventListener("load", async ()=>{
         if(flag){
             axios({
                 method: 'post',
-                url: 'http://localhost:3000/',
+                url: './user/login',
                 data: {
                     host: inputs[0].value,
                     user: inputs[1].value,
@@ -259,11 +270,14 @@ window.addEventListener("load", async ()=>{
                     database: inputs[3].value
                 }
             }).then(res => {
-                if(res.data.code == 1) alert("Información de la base de datos cargada exitosamente!!");
-                else alert("Hubo un error al cargar la información :(");
+                if(res.data.code == 1) generateNotification(res.data.message,"var(--verde)");
+                else generateNotification(res.data.message,"var(--rojo)");
+            }).catch(err => {
+                console.log(err);
+                generateNotification("No se pudo establecer conexión con la base de datos, vuelvelo a intentar","var(--naranja)");
             });
         }else{
-            alert("Tienes que llenar todos los campos!!");
+            generateNotification("Tienes que llenar todos los campos, o minimo colocar un espacio","var(--rojo)");
         }
     }
     
@@ -272,6 +286,45 @@ window.addEventListener("load", async ()=>{
         let form = document.querySelector(".form");
         form.remove();
     }
-    
+    //Generar notificación
+    function generateNotification(text, color){
+        destroyNotification();
+        setTimeout(()=>{
+            let not = document.createElement("div");
+            not.id = "notification";
+            let info = document.createElement("p");
+                info.innerHTML = text;
+                info.style.background = color;
+                clickEventHandler(info, ()=>{
+                    destroyNotification(not);
+                });
+            not.append(info);
+            body.append(not);
+            setTimeout(()=>{
+                destroyNotification(not);
+            }, 10000);
+        },200);
+    }   
+    //Destruir notificación
+    function destroyNotification(not = document.querySelector("#notification")){
+        if(not){
+            not.style.transform = "translateY(100px)";
+            setTimeout(()=>{
+                not.remove();
+            },200);
+        }
+    }
+    //Evento notificación
+    function clickEventHandler(obj, callback){
+        obj.addEventListener("click", eventHandler);
+
+        function eventHandler(){
+            callback();
+            obj.removeEventListener("click", eventHandler);
+            setTimeout(()=>{
+                obj.addEventListener("click", eventHandler);
+            },500);
+        }
+    } 
     
 });

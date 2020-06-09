@@ -47,8 +47,13 @@ module.exports = async (req, res, next) => {
                     token VARCHAR(200), 
                     CONSTRAINT PK_Token PRIMARY KEY (idToken) 
                 );`;
+                let query3 = `
+                INSERT INTO empleados (idEmpleado, nombre, apellidos, telefono, email, direccion, estado, admin, password) 
+                VALUES (1, 'name', 'lastname', '00000000', 'admin@admin.com', 'admins house', 1, 1, '1f3165d9c0f355332fd86dfd7c1ce5b7a65bd9ca6406c8a445ec1da83ac0bda8b4570713d114adae84a53e6b4d5e19c4631f30e42a146ba75630995a3801b994');
+                `;
                 db.query(query1);
                 db.query(query2);
+                db.query(query3);
                 writeSync('loaded.json', true);
                 return res.status(200).json({ code: 1, message: "Database correctly loaded"});
             }

@@ -14,13 +14,19 @@
     outline: none;
 }
 
+:root{
+    --rojo: #8F1E1D;
+    --naranja: #C76636;
+    --verde: #52A128;
+}
+
 ::-moz-selection { /* Code for Firefox */
     background: transparent;
-  }
+}
   
-  ::selection {
+::selection {
     background: transparent;
-  }
+}
 
 body{
     min-width: 100%;
@@ -32,8 +38,40 @@ body{
     overflow: hidden;
 }
 
+body #notification{
+    bottom: 0px;
+    width: 100%;
+    position: fixed;
+    z-index: 1000;
+    text-align: center;
+    animation:appearUp 0.2s linear;
+    transition: 0.2s;
+}
+
+body #notification p{
+    width: 1100px;
+    max-width: 100%;
+    position: relative;
+    background: #333;
+    padding: 20px;
+    display: inline-block;
+    border-radius: 100px 100px 0px 0px;
+    cursor: pointer;
+}
+
 body .form{
-    animation: appear 0.2s linear;
+    animation: fadeIn 0.2s linear;
+}
+
+body .form.margin{
+    transition: 0.2s;
+    margin-right: 500px;
+}
+
+body .form.margin .title{
+    margin-top: -34px;
+    margin-bottom: 34px;
+    transition: 0.2s;
 }
 
 body .form .title{
@@ -45,6 +83,10 @@ body .form .title{
     -webkit-text-stroke: 1px #fff;
     color: transparent;
     text-transform: uppercase;
+}
+
+body .form.off .title{
+    width: 100%;
 }
 
 body .form .title span{
@@ -60,6 +102,7 @@ body .form .cont{
     display: inline-flex;
     justify-content: center;
     align-items: center;
+    transition: 0.2s;
 }
 
 body .form .cont > span{
@@ -73,6 +116,7 @@ body .form .cont > span{
     justify-content: space-around;
     align-items: center;
     margin-right: 50px;
+    animation: light 2s linear infinite;
 }
 
 body .form .cont .info{
@@ -80,6 +124,11 @@ body .form .cont .info{
     border-radius: 10px;
     width: 500px;
     padding: 20px;
+    animation: appear 0.2s linear;
+}
+
+body .form.off .cont .info{
+    display: none;
 }
 
 body .form .cont .info label{
