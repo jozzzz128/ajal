@@ -27,7 +27,7 @@ user.post("/login", async(req, res, next) => {
     if (!email || !password) return res.status(200).json({ code: 500, message: "Campos incompletos"}); 
 
     try {
-        const query = `SELECT * FROM empleados WHERE email = '${email}' AND password = '${hash(password)}';`;
+        const query = `SELECT idEmpleado, email, nombre, apellidos FROM empleados WHERE email = '${email}' AND password = '${hash(password)}';`;
         const rows = await db.query(query);
         if(rows.length == 1)
         {
@@ -35,7 +35,7 @@ user.post("/login", async(req, res, next) => {
                 idEmpleado: rows[0].idEmpleado,
                 email: rows[0].email
             }, "debugkey");
-            return res.status(200).json({ code: 200, message: 'Inicio de sesión exitoso', token: token });
+            return res.status(200).json({ code: 200, message: 'Inicio de sesión exitoso, Bienvenid@ de vuelta '+rows[0].nombre+' '+rows[0].apellidos, token: token, });
         }
     } catch (e){console.log(e);} return res.status(200).json({ code: 401, message: "Usuario y/o password incorrectos"});
     

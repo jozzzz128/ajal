@@ -12,12 +12,17 @@
     -ms-user-select:none; 
     user-select:none;   
     outline: none;
+    /*Touchscreen*/
+    -webkit-tap-highlight-color:  rgba(255, 255, 255, 0); 
 }
 
+/*Colores de las notificaciones*/
 :root{
     --rojo: #8F1E1D;
     --naranja: #C76636;
-    --verde: #52A128;
+    --verde: #2A7048;
+    --azul: #293e4d;
+    --rojizo: #993F46;
 }
 
 ::-moz-selection { /* Code for Firefox */
@@ -28,6 +33,34 @@
     background: transparent;
 }
 
+button{
+    outline: 0px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 16px;
+    border: 0px;
+    background: #333;
+    width: 100%;
+    transform: scale(1);
+    transition: 0.1s;
+    display: inline-block;
+}
+
+button:hover{
+    transform: scale(1.03);
+    background: #4A4346;
+}
+
+button:focus{
+    transform: scale(1.03);
+    background: #4A4346;
+}
+
+button:nth-child(2){
+    margin-left: 15px;
+}
+
 body{
     min-width: 100%;
     min-height: 100vh;
@@ -36,10 +69,12 @@ body{
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    padding: 35px 0px;
 }
 
 body #notification{
     bottom: 0px;
+    left: 0px;
     width: 100%;
     position: fixed;
     z-index: 1000;
@@ -50,7 +85,7 @@ body #notification{
 
 body #notification p{
     width: 1100px;
-    max-width: 100%;
+    max-width: 90%;
     position: relative;
     background: #333;
     padding: 20px;
@@ -68,13 +103,25 @@ body .form.margin{
     margin-right: 500px;
 }
 
-body .form.margin .title{
-    margin-top: -34px;
-    margin-bottom: 34px;
+body .form.fade{
+    opacity: 0;
+}
+
+body .form.hide{
     transition: 0.2s;
 }
 
-body .form .title{
+body .form.hide.margin{
+    transition: 0s;
+}
+
+body .form.margin .cont .thumb .title{
+    margin-top: -34px;
+    margin-bottom: 34px;
+}
+
+body .form .cont .thumb .title{
+    width: calc(100% + 100px);
     padding: 15px;
     padding-left: 0px;
     font-size: 50px;
@@ -83,14 +130,14 @@ body .form .title{
     -webkit-text-stroke: 1px #fff;
     color: transparent;
     text-transform: uppercase;
+    transition: 0.2s;
+    position: absolute;
+    bottom: calc(100% + 20px);
+    left: 0px;
 }
 
-body .form.off .title{
-    width: 100%;
-}
-
-body .form .title span{
-    margin-top: 0px;
+body .form .cont .thumb .title span{
+    margin-top: 5px;
     display: block;
     text-transform: uppercase;
     font-size: 18px;
@@ -105,18 +152,22 @@ body .form .cont{
     transition: 0.2s;
 }
 
-body .form .cont > span{
-    font-size: 120px;
+body .form .cont .thumb{
     border: 1px solid #fff;
     border-radius: 10px;
     display: inline-block;
     width: 300px;
     height: 300px;
     display: inline-flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
     margin-right: 50px;
     animation: light 2s linear infinite;
+    position: relative;
+}
+
+body .form .cont .thumb > span{
+    font-size: 120px;
 }
 
 body .form .cont .info{
@@ -125,6 +176,12 @@ body .form .cont .info{
     width: 500px;
     padding: 20px;
     animation: appear 0.2s linear;
+    transition: 0.2s;
+}
+
+body .form.hide .cont .info{
+    opacity: 0;
+    transform:scale(0.8);
 }
 
 body .form.off .cont .info{
@@ -163,33 +220,6 @@ body .form .cont .info .b-cont{
     margin-top: 10px;
 }
 
-body .form .cont .info .b-cont button{
-    outline: 0px;
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 10px;
-    font-size: 16px;
-    border: 0px;
-    background: #333;
-    width: 100%;
-    transform: scale(1);
-    transition: 0.1s;
-}
-
-body .form .cont .info .b-cont button:hover{
-    transform: scale(1.03);
-    background: #4A4346;
-}
-
-body .form .cont .info .b-cont button:focus{
-    transform: scale(1.03);
-    background: #4A4346;
-}
-
-body .form .cont .info .b-cont button:nth-child(2){
-    margin-left: 15px;
-}
-
 body .table{
     max-width: 1300px;
     padding: 20px;
@@ -223,4 +253,192 @@ body .table ul li input{
     outline: 0px;
     width: 100%;
     padding: 10px;
+}
+
+header{
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    left: 0px;
+    text-align: center;
+}
+
+header .cont{
+    width: 100%;
+    max-width: 1200px;
+    margin:0 auto;
+    display: inline-block;
+    text-align: right;
+    padding: 20px;
+}
+
+header .cont .logo{
+    float: left;
+    font-size: 40px;
+    font-weight: bolder;
+    font-family: 'Righteous';
+    -webkit-text-stroke: 1px #fff;
+    color: transparent;
+    text-transform: uppercase;
+    text-align: left;
+    font-weight: normal;
+}
+
+header .cont .logo span{
+    display: block;
+    font-size: 16px;
+    margin-top: 3px;
+}
+
+header .cont .options{
+    width: 350px;
+    display: inline-flex;
+    text-align: center;
+    list-style: none;
+}
+
+
+#login-content{
+    width: 100%;
+    max-width: 1200px;
+    display: inline-flex;
+    padding: 20px;
+}
+
+#login-content .profile h2{
+    font-weight: normal;
+    font-size: 32px;
+    padding: 20px 0px;
+}
+
+#login-content .profile h2 span{
+    font-size: 20px;
+    text-transform: uppercase;
+    display: block;
+    font-weight: bolder;
+}
+
+#login-content .profile .profile-card{
+    max-width: 100%;
+    width: 750px;
+    height: 380px;
+    border: 5px solid #333;
+    border-radius: 4px;
+    display: inline-flex;
+    justify-content: left;
+    align-items: center;
+}
+
+#login-content .profile .profile-card .left{
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    max-width: 300px;
+    background: #333;
+}
+
+#login-content .profile .profile-card .left .part{
+    width: 100%;
+    position: relative;
+    height: 50%;
+    text-align: center;
+}
+
+#login-content .profile .profile-card .left .part:nth-child(1){
+    z-index: 10;
+}
+
+#login-content .profile .profile-card .left .part:nth-child(2){
+    background: #191919;
+    display: inline-flex;
+    align-items: flex-end;
+}
+
+#login-content .profile .profile-card .left .part .thumb{
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 90px;
+    width: 180px;
+    height: 180px;
+    border: 10px solid #333;
+    border-radius: 100%;
+    background: #191919;
+    position: relative;
+    top: calc(100% - 90px);
+}
+
+#login-content .profile .profile-card .right{
+    width: 100%;
+}
+
+#login-content .profile .profile-card .right ul{
+    padding: 10px;
+    list-style: none;
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+#login-content .profile .profile-card .right ul li{
+    font-weight: bolder;
+    font-size: 14px;
+    padding: 10px;
+    display: inline-block;
+    text-align: center;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    width: 100%;
+    text-align: left;
+}
+
+#login-content .profile .profile-card .right ul li span{
+    font-size: 22px;
+    font-weight: lighter;
+    display: block;
+    text-transform: none;
+    margin-bottom: 4px;
+}
+
+#login-content .profile .profile-card .left .part .info{
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+}
+
+#login-content .profile .profile-card .left .part .info p{
+    font-size: 33px;
+}
+
+#login-content .profile .profile-card .left .part .info p:nth-child(2){
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: normal;
+}
+
+#login-content .search{
+    width: 100%;
+    position: relative;
+    padding: 20px;
+    overflow: auto;
+    display: inline-flex;
+    align-items: center;
+}
+
+#login-content .search .search-c input{
+    width: 100%;
+    padding: 15px 20px;
+    font-size: 18px;
+    background: #333;
+    border-radius: 100px;
+    border: 0px;
+}
+
+#login-content .search .search-c p{
+    padding: 10px;
+    transition: 0.2s;
+    font-style: italic;
 }
