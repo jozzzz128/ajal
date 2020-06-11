@@ -8,13 +8,35 @@ const hash = require('../middleware/hash');
 emplo.post("/", async (req, res) => {
     try {
         const token = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
-        const query = "SELECT idEmpleado, nombre, apellidos, telefono, email, direccion, estado, admin FROM empleados WHERE idEmpleado = "+token.idEmpleado+";";
-        const rows = await db.query(query);
+        let idEmpleado = req.body.id;
+        if(!idEmpleado) idEmpleado = token.idEmpleado;
+        let query = "SELECT admin FROM empleados WHERE idEmpleado = "+token.idEmpleado+";";
+        let rows = await db.query(query);
+        if(idEmpleado != token.idEmpleado && rows[0].admin != 1) return res.status(200).json({ code:409, message: 'Nos dispones de permisos para realizar esta acción'});
+        query = "SELECT idEmpleado, nombre, apellidos, telefono, email, direccion, estado, admin FROM empleados WHERE idEmpleado = "+idEmpleado+";";
+        rows = await db.query(query);
         return res.status(200).json({ code:200, message: 'Información del usuario cargada exitosamente', employee: rows});
+    } catch (error) { console.log(error);}
+    return res.status(200).json({ code:409, message: 'Sessión invalida, se requiere volver a iniciar sesión'});
+});
+
+//Buscar empleados
+emplo.post("/search", async (req, res) => {
+    try {
+        const token = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
+        const search = req.body.search;
+        let query = "SELECT admin FROM empleados WHERE idEmpleado = "+token.idEmpleado+";";
+        let rows = await db.query(query);
+        //Validaciones
+        if(rows[0].admin != 1) return res.status(200).json({ code:409, message: 'No tienes permisos suficientes para realizar esta operación'});
+        if(!search) return res.status(200).json({ code:409, message: 'Falta incluir el parametro de busqueda'});
+        query = `SELECT idEmpleado, nombre, apellidos, email FROM empleados WHERE nombre LIKE '%${search}%' OR apellidos LIKE '%${search}%' OR telefono LIKE '%${search}%' OR email LIKE '%${search}%' OR email LIKE '%${search}%' OR direccion LIKE '%${search}%';`;
+        rows = await db.query(query);
+        return res.status(200).json({ code:200, message: 'Busqueda exitosa', employees: rows});
     } catch (error) {
         console.log(error);
     }
-    return res.status(200).json({ code:409, message: 'Sessión invalida, se requiere realizar volver a iniciar sesión'});
+    return res.status(200).json({ code:409, message: 'Sessión invalida, se requiere volver a iniciar sesión'});
 });
 
 //Actualizar la informacion de un empleado
@@ -26,7 +48,7 @@ emplo.patch("/:id([0-9]{1,3})", async(req, res) => {
         const decoded = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
         const query = "SELECT admin FROM empleados WHERE idEmpleado = "+decoded.idEmpleado+" AND password = '"+hash(confirmPassword)+"'";
         rows = await db.query(query);
-        if(req.params.id != decoded.idEmpleado || rows[0].admin != 1) return res.status(200).json({ code: 409, message: "No tienes autorización para realizar esta operacion" });
+        if(req.params.id != decoded.idEmpleado && rows[0].admin != 1) return res.status(200).json({ code: 409, message: "No tienes autorización para realizar esta operacion" });
     } catch(e){
         return res.status(200).json({ code: 409, message: "Ocurrio un error al verificar la autenticidad del usuario" });
     }
@@ -73,14 +95,27 @@ emplo.patch("/:id([0-9]{1,3})", async(req, res) => {
 });
 
 emplo.delete("/:id([0-9]{1,3})", async(req, res) => {
-    const query = `DELETE FROM empleados WHERE idEmpleado=${req.params.id}`
-    const rows = await db.query(query);
-    if (rows.affectedRows == 1) 
-    {
-        return res.status(200).json({ code: 200, message: "Empleado Borrado Correctamente" })
+    try {
+        const decoded = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
+        const pass = req.body.password;
+        if(!pass) return res.status(200).json({ code: 409, message: "Falta una confirmación por contraseña para realizar la operación" });
+
+        let query = `SELECT admin FROM empleados WHERE idEmpleado=${decoded.idEmpleado} AND password = '${hash(pass)}'`;
+        let rows = await db.query(query);
+        if(rows[0].admin != 1) return res.status(200).json({ code: 409, message: "Te faltan permisos para realizar esta operación" });
+
+        //Eliminar empleado por ID
+        query = `DELETE FROM empleados WHERE idEmpleado=${req.params.id}`;
+        rows = await db.query(query);
+        if (rows.affectedRows == 1) 
+        {
+            return res.status(200).json({ code: 200, message: "Empleado Borrado Correctamente" })
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(200).json({ code: 409, message: "La contraseña proporcionada no corresponde con el usuario administrador" });
     }
     return res.status(200).json({ code: 404, message: "Empleado no encontrado" });
 });
-
 
 module.exports = emplo;

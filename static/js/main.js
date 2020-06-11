@@ -3,9 +3,7 @@
 window.addEventListener("load", async ()=>{
 
     let body = document.querySelector("body");
-    setTimeout(()=>{
-        body.style.overflow = "auto";
-    },1000);
+    let activeSearch = false;
 
     try {
         const db = await axios({
@@ -33,18 +31,37 @@ window.addEventListener("load", async ()=>{
                 'Authorization': "Bearer " + localStorage.getItem("token")
             }
         }
-        axios.post('./employee/', {}, headers).then(res => {
+        axios.post('./employee/',{}, headers).then(res => {
             if(notification && res.data.code == 200){
-                //Create Full Login
-                generateHeader();
-                //Body Content
-                generatePrincipalContent();
-                setTimeout(()=>{
-                    generateCard(res.data.employee[0], true);
-                    generateNotification(res.data.message,"var(--verde)");
-                },300);
+                //Verify if admin
+                if(res.data.employee[0].admin == 0){
+                    //Create Full Login
+                    generateHeader(false);
+                    //Body Content
+                    generatePrincipalContent(false);
+                    setTimeout(()=>{
+                        generateCard(res.data.employee[0], true, false);
+                        generateNotification(res.data.message,"var(--verde)");
+                        handleScrollBar(false);
+                    },300);
+                }else{
+                    //Create Full Login
+                    generateHeader();
+                    //Body Content
+                    generatePrincipalContent();
+                    setTimeout(()=>{
+                        generateCard(res.data.employee[0], true);
+                        generateNotification(res.data.message,"var(--verde)");
+                        handleScrollBar(false);
+                    },300);
+                }
+                
             }
-            else if(notification) generateNotification(res.data.message,"var(--rojo)");
+            else if(notification){
+                generateNotification(res.data.message,"var(--rojo)");
+                localStorage.removeItem('token');
+                createLoginform(false);
+            } 
         });
     }
 
@@ -124,6 +141,7 @@ window.addEventListener("load", async ()=>{
                         form.classList.remove("off");
                         if(notificationPop){
                             setTimeout(()=>{
+                                handleScrollBar(false);
                                 generateNotification('Bienvenido de regreso, ingresa tus credenciales para iniciar sesión','var(--azul)');
                             },200);
                         }
@@ -144,9 +162,19 @@ window.addEventListener("load", async ()=>{
                     password: inputs[1].value,
                 }
             }).then(res => {
-                if(res.data.code == 200) generateNotification(res.data.message, "var(--verde)");
-                localStorage.setItem('token', res.data.token);
-                deleteForm(createLoginContent);
+                if(res.data.code == 200){
+                    generateNotification(res.data.message, "var(--verde)");
+                    localStorage.setItem('token', res.data.token);
+                    deleteForm(()=>{
+                        createLoginContent(true);
+                    });
+                }
+                else if(res.data.code == 409){
+                    generateNotification(res.data.message, "var(--naranja)");
+                } 
+                else{
+                    generateNotification(res.data.message, "var(--rojo)");
+                }
             });
         }else{
             generateNotification('Tienes que llenar todos los campos para continuar','var(--naranja)');
@@ -218,7 +246,9 @@ window.addEventListener("load", async ()=>{
                     let signButton = document.createElement("button"); 
                         signButton.innerHTML = 'Registrarse';
                         clickEventHandler(signButton, ()=>{
-                            loadRegister();
+                            if(passInput.value != pass2Input.value){
+                                generateNotification("Las contraseñas no coinciden","var(--rojo)");
+                            }else loadRegister();
                         });
                     buttonCont.append(logButton);
                     buttonCont.append(signButton);
@@ -234,6 +264,7 @@ window.addEventListener("load", async ()=>{
                 setTimeout(()=>{
                         form.classList.remove("margin");
                         form.classList.remove("off");
+                        handleScrollBar(false);
                 },300);
         },300);
     }
@@ -257,7 +288,13 @@ window.addEventListener("load", async ()=>{
                     password: inputs[5].value
                 }
             }).then(res => {
-                alert(res.data.message);
+                if(res.data.code == 200){
+                    generateNotification(res.data.message, "var(--verde)");
+                    deleteForm(()=>{
+                        createLoginform(false);
+                    });
+                }
+                else generateNotification(res.data.message, "var(--rojo)");
             });
         }else{
             generateNotification('Tienes que llenar todos los campos para continuar','var(--naranja)');
@@ -319,6 +356,7 @@ window.addEventListener("load", async ()=>{
                         form.classList.remove("margin");
                         form.classList.remove("off");
                         setTimeout(()=>{
+                            handleScrollBar(false);
                             generateNotification("Por favor ingresa la información de conexión a la base de datos de MySQL","var(--azul)");
                         },300);
                 },300);
@@ -391,6 +429,7 @@ window.addEventListener("load", async ()=>{
 
     //Borrar formulario activo
     function deleteForm(callback){
+        handleScrollBar();
         let form = document.querySelector(".form");
         form.classList.add("hide");
         setTimeout(()=>{
@@ -407,8 +446,6 @@ window.addEventListener("load", async ()=>{
                 },200);
             },200);
         },200);
-        //form.remove();
-
     }
     //Evento notificación
     function clickEventHandler(obj, callback, reload = true){
@@ -425,7 +462,7 @@ window.addEventListener("load", async ()=>{
         }
     }
     //Evento popUp password
-    function permisionPop(operation, callback){
+    function permisionPop(operation, callback, changePassword = false){
         let pop = document.createElement("div");
             pop.id = "permition-prompt";
             let background = document.createElement("div");
@@ -448,25 +485,64 @@ window.addEventListener("load", async ()=>{
                     info.classList.add("info");
                     let title = document.createElement("div");
                         title.classList.add("title");
-                        title.innerHTML = `
+                        if(changePassword){
+                            title.innerHTML = `
+                            <h2>Ingresa tu contraseña actual y la nueva contraseña del empleado para confirmar la operación de</h2>
+                            <span style="background:var(--rojo);">${operation}</span>
+                        `;
+                        }else{
+                            title.innerHTML = `
                             <h2>Ingrese su contraseña para confirmar la operación de</h2>
                             <span>${operation}</span>
                         `;
-                    let input = document.createElement("input");
-                        input.type = "password";
-                        input.placeholder = "e.j. 12345";
-                    let button = document.createElement("button");
-                        button.innerHTML = "Confirmar Acción";
-                        clickEventHandler(button, ()=>{
-                            const value = input.value;
-                            if(value.trim().length != 0){
-                                callback(value);
-                                destroyPermisionPop();
-                            }else generateNotification("Tienes que ingresar tu contraseña para continuar con la operación","var(--rojo)");
-                        },false);
+                        }
                     info.append(title);
-                    info.append(input);
-                    info.append(button);        
+                    if(changePassword){
+                        let input = document.createElement("input");
+                            input.type = "password";
+                            input.placeholder = "Contraseña actual e.j. 12345";
+                        let input2 = document.createElement("input");
+                            input2.type = "password";
+                            input2.placeholder = "Nueva contraseña e.j. 12345";
+                        let input3 = document.createElement("input");
+                            input3.type = "password";
+                            input3.placeholder = "Confirmar nueva contraseña e.j. 12345";
+                        let button = document.createElement("button");
+                            button.innerHTML = "Confirmar Acción";
+                            clickEventHandler(button, ()=>{
+                                const values = [input.value, input2.value, input3.value];
+                                let flag = true;
+                                values.forEach(value => {
+                                    if(value.trim().length == 0) flag = false;
+                                });
+                                if(flag){
+                                    if(input2.value != input3.value) generateNotification("La nueva contraseña no coincide con su confirmación","var(--rojo)");
+                                    else{
+                                        callback(values);
+                                        destroyPermisionPop();
+                                    }
+                                }else generateNotification("Tienes que ingresar la información solicitada para continuar con la operación","var(--rojo)");
+                            });
+                        info.append(input);
+                        info.append(input2);
+                        info.append(input3);
+                        info.append(button);  
+                    }else{
+                        let input = document.createElement("input");
+                            input.type = "password";
+                            input.placeholder = "e.j. 12345";
+                        let button = document.createElement("button");
+                            button.innerHTML = "Confirmar Acción";
+                            clickEventHandler(button, ()=>{
+                                const value = input.value;
+                                if(value.trim().length != 0){
+                                    callback(value);
+                                    destroyPermisionPop();
+                                }else generateNotification("Tienes que ingresar tu contraseña para continuar con la operación","var(--rojo)");
+                            });
+                        info.append(input);
+                        info.append(button);  
+                    }   
                 content.append(info);
                 content.append(x);
             pop.append(background);
@@ -488,9 +564,20 @@ window.addEventListener("load", async ()=>{
             } ,300);
         },500);
     }
+    //Cerrar sesión
+    function logOut(){
+        let token = localStorage.getItem('token');
+        if(token) localStorage.removeItem('token');
+        handleScrollBar();
+
+        removePrincipalContent(()=>{
+            generateNotification("Se ha cerrado la sesión exitosamente","var(--verde)");
+            createLoginform(false);
+        });
+    }
     
     //Generar Header
-    function generateHeader(){
+    function generateHeader(flag = true){
         let header = document.createElement("header");
             let cont = document.createElement("div");
                 cont.classList.add("cont");
@@ -501,9 +588,29 @@ window.addEventListener("load", async ()=>{
                     options.classList.add("options");
                     let button1 = document.createElement("button");
                         button1.innerHTML = 'Editar Perfil';
+                        //Cargar ficha de empleado propia
+                        clickEventHandler(button1, ()=>{
+                            let headers = {
+                                headers: {
+                                    'Authorization': "Bearer " + localStorage.getItem("token")
+                                }
+                            }
+                            axios.post('./employee/', {}, headers).then(res => {
+                                if(res.data.code == 200){
+                                    setTimeout(()=>{
+                                        generateCard(res.data.employee[0], true);
+                                        handleScrollBar(false);
+                                    },300);
+                                }
+                                else if(notification){
+                                    generateNotification(res.data.message,"var(--rojo)");
+                                } 
+                            });
+                        });
                     let button2 = document.createElement("button");
                         button2.innerHTML = 'Cerrar Sesión';
-                    options.append(button1);
+                        clickEventHandler(button2, logOut);
+                    if(flag) options.append(button1);
                     options.append(button2);
                 cont.append(logo);
                 cont.append(options);
@@ -511,7 +618,7 @@ window.addEventListener("load", async ()=>{
         body.append(header);
     }
     //Generar Login-Content
-    function generatePrincipalContent(){
+    function generatePrincipalContent(flag = true){
         let loginContent = document.createElement("div");
             loginContent.id = "login-content";
             let profile = document.createElement("div");
@@ -530,10 +637,15 @@ window.addEventListener("load", async ()=>{
                         let input = document.createElement("input");
                             input.type = "text";
                             input.placeholder = "Busca un empleado";
-                            input.addEventListener("change", ()=>{
+                            input.addEventListener("keyup", ()=>{
                                 let val = input.value.trim();
-                                /*if(val.length > 3)
-                                    ajaxSearch(val);lol*/
+                                if(val.length > 3){
+                                    setTimeout(()=>{
+                                        if(!activeSearch) ajaxSearch(val);
+                                    },300);
+                                }else{
+                                    generateSearchResults([]);
+                                }
                             });
                             input.addEventListener("focus", ()=>{
                                 let leyend = input.parentElement.querySelector("p");
@@ -541,7 +653,8 @@ window.addEventListener("load", async ()=>{
                             });
                             input.addEventListener("blur", ()=>{
                                 let leyend = input.parentElement.querySelector("p");
-                                    leyend.classList.remove("focus");
+                                let search = input.parentElement.parentElement.querySelector(".results");
+                                    if(search.innerHTML.trim().length == 0) leyend.classList.remove("focus");
                             });
                         let p = document.createElement("p");
                             p.innerHTML = 'Se puede realizar una busqueda ya sea por nombre, apellidos, teléfono, email, correo o dirección';
@@ -552,14 +665,30 @@ window.addEventListener("load", async ()=>{
                         results.classList.add("results");
                     center.append(results);
                 search.append(center);
-            loginContent.append(search);
+            if(flag) loginContent.append(search);
         body.append(loginContent);
-        //Cargando la profile card del usuario logeado
+    }
+    function removePrincipalContent(callback = ()=>{}){
+        let header = document.querySelector("header");
+        let loginContent = document.querySelector("#login-content");
+
+        header.style.opacity = "0";
+        loginContent.style.opacity = "0";
+        setTimeout(()=>{
+            header.remove();
+            loginContent.remove();
+            setTimeout(()=>{
+                callback();
+            },100);
+        },200);
     }
     //Generar ficha de Empleado
-    function generateCard(info, self = false){
+    function generateCard(info, self = false, flag = true){
         let where = document.querySelector("#login-content .profile");
-        let profileCard = document.createElement("div");
+        let prevCard = document.querySelector("#login-content .profile .profile-card");
+        if(prevCard) destroyCard();
+        setTimeout(()=>{
+            let profileCard = document.createElement("div");
             profileCard.classList.add("profile-card");
             let left = document.createElement("div");
                 left.classList.add("left");
@@ -620,32 +749,47 @@ window.addEventListener("load", async ()=>{
                     li1.title = "Guardar cambios de la ficha";
                     //Actualizar cambios realizados a la ficha
                     clickEventHandler(li1, ()=>{
-                        //Ask for a password confirmation
+                        //Obtener confirmación por contraseña
                         permisionPop("Actualización de Datos", (pass)=>{
-
+                            let changes = profileCard.querySelectorAll('input[type="text"], input[type="radio"]:checked');
                             let headers = {
                                 headers: {
                                     'Authorization': "Bearer " + localStorage.getItem("token")
                                 }
                             };
                             let data = {
+                                nombre: changes[0].value,
+                                apellidos: changes[1].value,
+                                telefono: changes[2].value,
+                                email: changes[3].value,
+                                direccion: changes[4].value,
                                 confirmPassword: pass,
                                 token: localStorage.getItem("token")
                             };
-                            let changes = profileCard.querySelectorAll('input[type="text"], input[type="radio"]:checked');
-                            if(changes.length >= 1) data.nombre = changes[0].value;
-                            if(changes.length >= 2) data.apellidos = changes[1].value;
-                            if(changes.length >= 3) data.telefono = changes[2].value;
-                            if(changes.length >= 4) data.email = changes[3].value;
-                            if(changes.length >= 5) data.direccion = changes[4].value;
-                            if(changes.length >= 6) data.estado = parseInt(changes[5].value);
-                            if(changes.length >= 7) data.admin = parseInt(changes[6].value);
-    
+                            if(changes.length >= 6){
+                                data.estado = parseInt(changes[5].value);
+                                data.admin = parseInt(changes[6].value);
+                            } 
                             axios.patch('./employee/'+info.idEmpleado, data, headers).then(res => {
                                 console.log(res.data);
                                 setTimeout(()=>{
                                     const {code, message} = res.data;
                                     if(code == 200){
+                                        if(self){
+                                            //Reload Token
+                                            axios({
+                                                method: 'post',
+                                                url: './user/login',
+                                                data: {
+                                                    email: info.email,
+                                                    password: pass
+                                                }
+                                            }).then(res => {
+                                                if(res.data.code == 200){
+                                                    localStorage.setItem('token', res.data.token);
+                                                }
+                                            });
+                                        }
                                         generateNotification(message, "var(--verde)");
                                     }
                                     else generateNotification(message, "var(--rojo)");
@@ -657,14 +801,160 @@ window.addEventListener("load", async ()=>{
                 let li2 = document.createElement("li");
                     li2.classList.add("icon-x");
                     li2.title = "Eliminar al Empleado";
+                    clickEventHandler(li2, ()=>{
+                        //Obtener confirmación por contraseña
+                        permisionPop("Eliminar usuario", (pass)=>{
+                            deleteEmployee(info.idEmpleado, pass);
+                        });
+                    });
                 let li3 = document.createElement("li");
                     li3.classList.add("icon-key");
                     li3.title = "Cambiar contraseña del Empleado";
+                    //Actualizar contraseña del empleado
+                    clickEventHandler(li3, ()=>{
+                        //Obtener confirmación por contraseña
+                        permisionPop("Actualización de Contraseña", (passwords)=>{
+                            let headers = {
+                                headers: {
+                                    'Authorization': "Bearer " + localStorage.getItem("token")
+                                }
+                            };
+                            let data = {
+                                password: passwords[1],
+                                confirmPassword: passwords[0],
+                            };
+    
+                            axios.patch('./employee/'+info.idEmpleado, data, headers).then(res => {
+                                console.log(res.data);
+                                setTimeout(()=>{
+                                    const {code, message} = res.data;
+                                    if(code == 200){
+                                        generateNotification(message, "var(--verde)");
+                                    }
+                                    else generateNotification(message, "var(--rojo)");
+                                },300);
+                            });
+                        }, true);
+                    });
                 options.append(li1);
-                options.append(li2);
                 options.append(li3);
-            profileCard.append(options);
+                if(!self) options.append(li2);
+            if(flag) profileCard.append(options);
         where.append(profileCard);
-    } 
+        },300);
+    }
+    function destroyCard(){
+        let card = document.querySelector("#login-content .profile .profile-card");
+        card.style.opacity = 0;
+        setTimeout(()=>{
+            card.remove();
+        },300);
+    }
+    //Eliminar Empleado
+    function deleteEmployee(id, password){
+        axios.delete('./employee/'+id, {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token")
+            },
+            data: {
+                password: password
+            }
+          }).then(res => {
+                const {code, message} = res.data;
+                if(code == 200){
+                    generateNotification(message,"var(--verde)");
+                    //Vaciar lista de resultados de busqueda
+                    generateSearchResults([]);
+                    //Generar ficha de Empleado
+                    let headers = {
+                        headers: {
+                            'Authorization': "Bearer " + localStorage.getItem("token")
+                        }
+                    }
+                    axios.post('./employee/', {}, headers).then(res => {
+                        if(res.data.code == 200){
+                            setTimeout(()=>{
+                                generateCard(res.data.employee[0], true);
+                                handleScrollBar(false);
+                            },300);
+                        }
+                    });
+              }else{
+                  generateNotification(message,"var(--rojo)");
+              }
+          });
+    }
+    
+    //Search
+    function ajaxSearch(val){
+        activeSearch = true;
+        let headers = {
+            headers: {
+                'Authorization': "Bearer " + localStorage.getItem("token")
+            }
+        }
+        axios.post('./employee/search', {search: val}, headers).then(res => {
+            if(res.data.code == 200){
+                setTimeout(()=>{
+                    activeSearch = false;
+                },300);
+                generateSearchResults(res.data.employees);
+            }
+            else generateNotification(res.data.message, "var(--rojo)");
+        });
+    }
+    //Generate Search Results
+    function generateSearchResults(results){
+        let searchContainer = document.querySelector("#login-content .search .center .results");
+            searchContainer.classList.add("close");
+            setTimeout(()=>{
+                searchContainer.innerHTML = '';
+                setTimeout(()=>{
+                    results.forEach(elem => {
+                        let result = document.createElement("article");
+                            clickEventHandler(result, ()=>{
+                                //Obtener información y generar ficha de empleado por ID
+                                let headers = {
+                                    headers: {
+                                        'Authorization': "Bearer " + localStorage.getItem("token")
+                                    }
+                                }
+                                axios.post('./employee/', {id: elem.idEmpleado}, headers).then(res => {
+                                    if(res.data.code == 200){
+                                        //Create Full Login
+                                        generateCard(res.data.employee[0]);
+                                        handleScrollBar(false);
+                                    }
+                                    else{
+                                        generateNotification(res.data.message,"var(--rojo)");
+                                    } 
+                                });
+                            });
+                            result.innerHTML = `
+                                <div class="thumb">
+                                    <span class="icon-user"></span>
+                                </div>
+                                <div class="info">
+                                    ${elem.nombre} ${elem.apellidos}
+                                    <span>${elem.email}</span>
+                                </div>
+                            `;
+                        searchContainer.append(result);
+                    });
+                    setTimeout(()=>{
+                        searchContainer.classList.remove("close");
+                    },300);
+                },300);
+            },300);
+    }
+    //Scrollbar
+    function handleScrollBar(flag = true){
+        if(flag){
+            body.style = "";
+        }
+        else{
+            body.style.overflow = "auto";
+        }
+    }
     
 });
