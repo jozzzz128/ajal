@@ -261,7 +261,6 @@ header{
     width: 100%;
     left: 0px;
     text-align: center;
-    animation: fadeIn 0.2s linear;
 }
 
 header .cont{
@@ -304,12 +303,6 @@ header .cont .options{
     max-width: 1200px;
     display: inline-flex;
     padding: 20px;
-    animation: fadeIn 0.2s linear;
-}
-
-#login-content .profile{
-    width: 100%;
-    min-width: 750px;
 }
 
 #login-content .profile h2{
@@ -326,14 +319,14 @@ header .cont .options{
 }
 
 #login-content .profile .profile-card{
-    width: 100%;
+    max-width: 100%;
+    width: 750px;
     height: 380px;
     border: 5px solid #333;
     border-radius: 4px;
     display: inline-flex;
     justify-content: left;
     align-items: center;
-    animation: appear 0.2s linear;
 }
 
 #login-content .profile .profile-card .left{
@@ -402,46 +395,12 @@ header .cont .options{
     text-align: left;
 }
 
-#login-content .profile .profile-card .right ul li input{
-    display: none;
-}
-
-#login-content .profile .profile-card .right ul li input[type="text"]{
+#login-content .profile .profile-card .right ul li span{
     font-size: 22px;
     font-weight: lighter;
     display: block;
     text-transform: none;
     margin-bottom: 4px;
-    background: transparent;
-    border: 0px;
-}
-
-#login-content .profile .profile-card .right ul li label{
-    font-size: 16px;
-    display: none;
-    padding: 5px 10px;
-    border-radius: 10px;
-    margin-right: 10px;
-    cursor: pointer;
-    width: 100px;
-    text-align: center;
-    animation: appear 0.2s linear;
-}
-
-#login-content .profile .profile-card .right ul li label.off{
-    display: inline-block;
-    background: #333;
-    cursor: default;
-}
-
-#login-content .profile .profile-card .right ul li input:nth-child(1):checked ~ label.active{
-    display: inline-block;
-    background: var(--verde);
-}
-
-#login-content .profile .profile-card .right ul li input:nth-child(2):checked ~ label.inactive{
-    display: inline-block;
-    background: var(--rojo);
 }
 
 #login-content .profile .profile-card .left .part .info{
@@ -450,35 +409,14 @@ header .cont .options{
     padding: 20px;
 }
 
-#login-content .profile .profile-card .left .part .info input{
+#login-content .profile .profile-card .left .part .info p{
     font-size: 33px;
-    background: transparent;
-    border: 0px;
-    width: 100%;
-    text-align: center;
 }
 
-#login-content .profile .profile-card .left .part .info input:nth-child(2){
+#login-content .profile .profile-card .left .part .info p:nth-child(2){
     font-size: 16px;
     text-transform: uppercase;
     font-weight: normal;
-}
-
-#login-content .profile .profile-card .options li{
-    font-size: 30px;
-    padding: 20px;
-    list-style: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    margin: 15px;
-    cursor: pointer;
-    transition: 0.1s;
-    transform: scale(1);
-}
-
-#login-content .profile .profile-card .options li:hover{
-    transform: scale(1.1);
-    background: rgba(255, 255, 255, 0.3);
 }
 
 #login-content .search{
@@ -486,7 +424,6 @@ header .cont .options{
     position: relative;
     padding: 20px;
     overflow: auto;
-    min-height: 200px;
     display: inline-flex;
     align-items: center;
 }
@@ -525,50 +462,15 @@ header .cont .options{
     transform: scale(1.03);
 }
 
-#login-content .search .search-c p.focus{
+#login-content .search .search-c input:focus + p{
     transform: scale(0);
-}
-
-#login-content .search .results{
-    max-height: 295px;
-    overflow: auto;
-    overflow-x: hidden;
-    margin-top: 10px;
-}
-
-#login-content .search .results::-webkit-scrollbar {
-    width: 10px;
-}
-  
-/* Track */
-#login-content .search .results::-webkit-scrollbar-track {
-    background: transparent; 
-}
-   
-/* Handle */
-#login-content .search .results::-webkit-scrollbar-thumb {
-    background: #888; 
-}
-  
-/* Handle on hover */
-#login-content .search .results::-webkit-scrollbar-thumb:hover {
-    background: #555; 
 }
 
 #login-content .search .results article{
     width: 100%;
-    padding: 10px 15px;
+    padding: 10px;
     margin-top: 10px;
     display: inline-flex;
-    transform: scale(1);
-    transition: 0.1s;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-#login-content .search .results article:hover{
-    transform: scale(1.03);
-    background: rgba(255, 255, 255, 0.1);
 }
 
 #login-content .search .results article .thumb{
@@ -586,114 +488,13 @@ header .cont .options{
 #login-content .search .results article .info{
     width: calc(100% - 80px);
     position: relative;
-    padding: 10px 15px;
+    padding: 15px;
 }
+/*
 
-/*POP UP*/
-#permition-prompt{
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    top: 0px;
-    left: 0px;
-    z-index: 1000;
-    animation: fadeIn 1s linear;
-    transition: 0.2s;
-    opacity: 1;
-}
+<div class="thumb">
+                        <span class="icon-user"></span>
+                    </div>
+                    <div class="info"></div>
 
-#permition-prompt.hide{
-    opacity: 0;
-}
-
-#permition-prompt .background{
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    background: rgba(0, 0, 0, 0.8);
-}
-
-#permition-prompt .content{
-    width: 100%;
-    max-width: 400px;
-    padding: 40px;
-    border: 5px solid #ccc;
-    border-radius: 10px;
-    position: relative;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    animation: appear 0.3s linear;
-    transition: 0.2s;
-    transform: scale(1);
-}
-
-#permition-prompt .content.off{
-    display: none;
-}
-
-#permition-prompt .content.hide{
-    transform: scale(0);
-}
-
-#permition-prompt .content .icon-x{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 25px;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: 0.2s;
-    transform: scale(1);
-}
-
-#permition-prompt .content .icon-x:hover{
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-#permition-prompt .content .title h2{
-    font-size: 20px;
-    padding: 0px 20px;
-    padding-bottom: 10px;
-    font-weight: normal;
-}
-
-#permition-prompt .content .title span{
-    display: inline-block;
-    padding: 10px;
-    border-radius: 10px;
-    text-transform: uppercase;
-    background-color: var(--naranja);
-    font-weight: bolder;
-    font-size: 14px;
-}
-
-#permition-prompt .content input{
-    width: 80%;
-    padding: 5px;
-    font-size: 30px;
-    background: transparent;
-    border: 0px;
-    border-bottom: 4px solid #fff;
-    border-radius: 10px;
-    text-align: center;
-    margin: 20px 0px;
-    margin-bottom: 30px;
-    opacity: 0.8;
-    transition: 0.2s;
-    font-family: 'Righteous';
-}
-
-#permition-prompt .content input::placeholder{
-    font-size: 18px;
-    color: #fff;
-}
-
-#permition-prompt .content input:focus{
-    opacity: 1;
-}
+*/

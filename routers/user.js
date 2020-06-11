@@ -5,7 +5,11 @@ const db = require('../config/database');
 const hash = require('../middleware/hash'); 
 
 //Registrar un nuevo usuario
-user.post("/register", async (req, res, next) => {
+user.get("/", async (req, res) => {
+    return res.status(200).json({ code: 200, message: "Estas en la ruta /user, prueba acceder a /user/login o /user/register"});
+});
+
+user.post("/register", async (req, res) => {
     const { nombre, apellidos, telefono, email, direccion, estado, admin, password } = req.body;
     console.log(req.body);
 
@@ -22,7 +26,7 @@ user.post("/register", async (req, res, next) => {
 });
 
 //Logear a un usuario
-user.post("/login", async(req, res, next) => {
+user.post("/login", async(req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(200).json({ code: 500, message: "Campos incompletos"}); 
 

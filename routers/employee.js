@@ -1,20 +1,35 @@
 const express = require('express');
 const emplo = express.Router();
 const db = require('../config/database');
+const jwt = require('jsonwebtoken');
 const hash = require('../middleware/hash');
 
 //Mostrar la informacion 
-emplo.get("/", async (req, res) => {
-    const query = "SELECT nombre, apellidos, telefono, email, direccion, estado FROM empleados";
-    const rows = await db.query(query);
-    return res.status(200).json({ code:200, message: 'Información de empleados cargada exitosamente', employees: rows});
+emplo.post("/", async (req, res) => {
+    try {
+        const token = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
+        const query = "SELECT idEmpleado, nombre, apellidos, telefono, email, direccion, estado, admin FROM empleados WHERE idEmpleado = "+token.idEmpleado+";";
+        const rows = await db.query(query);
+        return res.status(200).json({ code:200, message: 'Información del usuario cargada exitosamente', employee: rows});
+    } catch (error) {
+        console.log(error);
+    }
+    return res.status(200).json({ code:409, message: 'Sessión invalida, se requiere realizar volver a iniciar sesión'});
 });
 
 //Actualizar la informacion de un empleado
 emplo.patch("/:id([0-9]{1,3})", async(req, res) => {
-    const {nombre, apellidos, telefono, email, direccion, estado, admin, password} = req.body;
-    if(!nombre && !apellidos && !telefono && !email && !direccion && !estado && !admin && !password) return res.status(500).json({ code: 500, message: "Campos incompletos" });
+    const {nombre, apellidos, telefono, email, direccion, estado, admin, password, confirmPassword} = req.body;
+    if(!nombre && !apellidos && !telefono && !email && !direccion && !estado && !admin && !password && !confirmPassword || !confirmPassword) return res.status(200).json({ code: 500, message: "Campos incompletos" });
     let rows;
+    try{
+        const decoded = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
+        const query = "SELECT admin FROM empleados WHERE idEmpleado = "+decoded.idEmpleado+" AND password = '"+hash(confirmPassword)+"'";
+        rows = await db.query(query);
+        if(req.params.id != decoded.idEmpleado || rows[0].admin != 1) return res.status(200).json({ code: 409, message: "No tienes autorización para realizar esta operacion" });
+    } catch(e){
+        return res.status(200).json({ code: 409, message: "Ocurrio un error al verificar la autenticidad del usuario" });
+    }
     try {
         //Campos a Actualizar
         if(nombre){
@@ -54,7 +69,7 @@ emplo.patch("/:id([0-9]{1,3})", async(req, res) => {
         console.log(e);
         return res.status(200).json({ code: 500, message: "Ocurrio un error" });
     }
-    return res.status(200).json({ code: 200, message: "Campos actualizados correctamente"});
+    return res.status(200).json({ code: 200, message: "Se actualizo la información del empleado correctamente"});
 });
 
 emplo.delete("/:id([0-9]{1,3})", async(req, res) => {

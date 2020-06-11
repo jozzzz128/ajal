@@ -9,54 +9,44 @@ window.addEventListener("load", async ()=>{
 
     try {
         const db = await axios({
-            method: 'post',
-            url: './user/login',
+            method: 'get',
+            url: './user/',
             data: {}
         });
         if(db.data.code == 0) createDBform();
         else{
-            createLoginform();
+            const session = localStorage.getItem('token');
+            if(session){
+                createLoginContent(true);
+            }else{
+                createLoginform();
+            }
         }
     } catch (error) {
         console.log(error);
     }
 
-    //Crear tabla de empleados
-    function createEmployeeTable(){
+    //Cargar información post inicio de sesión
+    function createLoginContent(notification = false){
         let headers = {
             headers: {
                 'Authorization': "Bearer " + localStorage.getItem("token")
             }
         }
-
-        axios.get('./employee/', headers).then(res => {
-            //Create Table
-            let table = document.createElement("div");
-                table.classList.add("table");
-                let row = document.createElement('ul');
-                let rowValues = ["nombre", "apellidos", "teléfono", "email", "dirección", "estado"];
-                    for (let j = 0; j < rowValues.length; j++) {
-                        let val = document.createElement('li');
-                            val.innerHTML = rowValues[j];
-                        row.append(val);
-                    }
-                table.append(row);
-                for (let i = 0; i < res.data.employees.length; i++) {
-                    let ul = document.createElement('ul');
-                    let {nombre, apellidos, telefono, email, direccion, estado} = res.data.employees[i];
-                    if(estado == 0) estado = "inactivo";
-                    else estado = "activo";
-                    let values = [nombre, apellidos, telefono, email, direccion, estado];
-                        for (let j = 0; j < values.length; j++) {
-                            let li = document.createElement('li');
-                                li.innerHTML = '<input type="text" value="'+values[j]+'">';
-                            ul.append(li);
-                        }
-                    table.append(ul);
-                }
-            body.append(table);
+        axios.post('./employee/', {}, headers).then(res => {
+            if(notification && res.data.code == 200){
+                //Create Full Login
+                generateHeader();
+                //Body Content
+                generatePrincipalContent();
+                setTimeout(()=>{
+                    generateCard(res.data.employee[0], true);
+                    generateNotification(res.data.message,"var(--verde)");
+                },300);
+            }
+            else if(notification) generateNotification(res.data.message,"var(--rojo)");
         });
-    };
+    }
 
     //Crear formulario de login
     function createLoginform(notificationPop = true){
@@ -156,7 +146,7 @@ window.addEventListener("load", async ()=>{
             }).then(res => {
                 if(res.data.code == 200) generateNotification(res.data.message, "var(--verde)");
                 localStorage.setItem('token', res.data.token);
-                deleteForm(createEmployeeTable);
+                deleteForm(createLoginContent);
             });
         }else{
             generateNotification('Tienes que llenar todos los campos para continuar','var(--naranja)');
@@ -421,16 +411,260 @@ window.addEventListener("load", async ()=>{
 
     }
     //Evento notificación
-    function clickEventHandler(obj, callback){
+    function clickEventHandler(obj, callback, reload = true){
         obj.addEventListener("click", eventHandler);
 
         function eventHandler(){
             callback();
             obj.removeEventListener("click", eventHandler);
-            setTimeout(()=>{
-                obj.addEventListener("click", eventHandler);
-            },500);
+            if(reload){
+                setTimeout(()=>{
+                    obj.addEventListener("click", eventHandler);
+                },500);
+            }
         }
+    }
+    //Evento popUp password
+    function permisionPop(operation, callback){
+        let pop = document.createElement("div");
+            pop.id = "permition-prompt";
+            let background = document.createElement("div");
+                background.classList.add("background");
+                clickEventHandler(background, ()=>{
+                    destroyPermisionPop();
+                    generateNotification("Se ha cancelado la operación","var(--naranja)");
+                });
+            let content = document.createElement("div");
+                content.classList.add("content");
+                content.classList.add("off");
+                let x = document.createElement("span");
+                    x.classList.add("icon-x");
+                    x.title = "Cancelar operación";
+                    clickEventHandler(x, ()=>{
+                        destroyPermisionPop();
+                        generateNotification("Se ha cancelado la operación","var(--naranja)");
+                    },false);
+                let info = document.createElement("div");
+                    info.classList.add("info");
+                    let title = document.createElement("div");
+                        title.classList.add("title");
+                        title.innerHTML = `
+                            <h2>Ingrese su contraseña para confirmar la operación de</h2>
+                            <span>${operation}</span>
+                        `;
+                    let input = document.createElement("input");
+                        input.type = "password";
+                        input.placeholder = "e.j. 12345";
+                    let button = document.createElement("button");
+                        button.innerHTML = "Confirmar Acción";
+                        clickEventHandler(button, ()=>{
+                            const value = input.value;
+                            if(value.trim().length != 0){
+                                callback(value);
+                                destroyPermisionPop();
+                            }else generateNotification("Tienes que ingresar tu contraseña para continuar con la operación","var(--rojo)");
+                        },false);
+                    info.append(title);
+                    info.append(input);
+                    info.append(button);        
+                content.append(info);
+                content.append(x);
+            pop.append(background);
+            pop.append(content);
+        body.append(pop);
+        //Animation
+        setTimeout(()=>{
+            document.querySelector("#permition-prompt .content").classList.remove("off");
+        },300);
+    }
+    function destroyPermisionPop(){
+        let pop = document.querySelector("#permition-prompt");
+        let cont = pop.querySelector(".content");
+        cont.classList.add("hide");
+        setTimeout(()=>{
+            pop.classList.add("hide");
+            setTimeout(()=>{
+                pop.remove();
+            } ,300);
+        },500);
+    }
+    
+    //Generar Header
+    function generateHeader(){
+        let header = document.createElement("header");
+            let cont = document.createElement("div");
+                cont.classList.add("cont");
+                let logo = document.createElement("h2");
+                    logo.classList.add("logo");
+                    logo.innerHTML = 'Ajal System<span>Panel de Control</span>';
+                let options = document.createElement("ul");
+                    options.classList.add("options");
+                    let button1 = document.createElement("button");
+                        button1.innerHTML = 'Editar Perfil';
+                    let button2 = document.createElement("button");
+                        button2.innerHTML = 'Cerrar Sesión';
+                    options.append(button1);
+                    options.append(button2);
+                cont.append(logo);
+                cont.append(options);
+            header.append(cont);
+        body.append(header);
+    }
+    //Generar Login-Content
+    function generatePrincipalContent(){
+        let loginContent = document.createElement("div");
+            loginContent.id = "login-content";
+            let profile = document.createElement("div");
+                profile.classList.add("profile");
+                let h2 = document.createElement("h2");
+                    h2.innerHTML = '<span>Ficha de Empleado</span>';
+                profile.append(h2);
+            loginContent.append(profile);
+            //Search Bar
+            let search = document.createElement("div");
+                search.classList.add("search");
+                let center = document.createElement("div");
+                    center.classList.add("center");
+                    let searchC = document.createElement("div");
+                        searchC.classList.add("search-c");
+                        let input = document.createElement("input");
+                            input.type = "text";
+                            input.placeholder = "Busca un empleado";
+                            input.addEventListener("change", ()=>{
+                                let val = input.value.trim();
+                                /*if(val.length > 3)
+                                    ajaxSearch(val);lol*/
+                            });
+                            input.addEventListener("focus", ()=>{
+                                let leyend = input.parentElement.querySelector("p");
+                                    leyend.classList.add("focus");
+                            });
+                            input.addEventListener("blur", ()=>{
+                                let leyend = input.parentElement.querySelector("p");
+                                    leyend.classList.remove("focus");
+                            });
+                        let p = document.createElement("p");
+                            p.innerHTML = 'Se puede realizar una busqueda ya sea por nombre, apellidos, teléfono, email, correo o dirección';
+                        searchC.append(input);
+                        searchC.append(p);
+                    center.append(searchC);
+                    let results = document.createElement("div");
+                        results.classList.add("results");
+                    center.append(results);
+                search.append(center);
+            loginContent.append(search);
+        body.append(loginContent);
+        //Cargando la profile card del usuario logeado
+    }
+    //Generar ficha de Empleado
+    function generateCard(info, self = false){
+        let where = document.querySelector("#login-content .profile");
+        let profileCard = document.createElement("div");
+            profileCard.classList.add("profile-card");
+            let left = document.createElement("div");
+                left.classList.add("left");
+                left.innerHTML = `
+                <div class="part">
+                    <div class="thumb">
+                        <span class="icon-user"></span>
+                    </div>
+                </div>
+                <div class="part">
+                    <div class="info">
+                        <input type="text" value="${info.nombre}" placeholder="${info.nombre}">
+                        <input type="text" value="${info.apellidos}" placeholder="${info.apellidos}">
+                    </div>
+                </div>
+                `;
+            profileCard.append(left);
+            if(self){
+                let right = document.createElement("div");
+                right.classList.add("right");
+                let estado = 'ACTIVO';
+                if(info.estado == 0) estado = 'Inactivo';
+                let admin = 'si';
+                if(info.admin == 0) admin = 'no';
+                right.innerHTML = `
+                <ul>
+                        <li><input type="text" value="${info.telefono}" placeholder="${info.telefono}">Télefono</li>
+                        <li><input type="text" value="${info.email}" placeholder="${info.email}"> Email</li>
+                        <li><input type="text" value="${info.direccion}" placeholder="${info.direccion}">Dirección</li>
+                        <li><label class="off">${estado}</label>Estado</li>
+                        <li><label class="off">${admin}</label>Admin</li>
+                </ul>
+                `;
+            profileCard.append(right);
+            }else{
+                let right = document.createElement("div");
+                right.classList.add("right");
+                let estado = '<input type="radio" name="estado" id="active" value="1"><input type="radio" name="estado" id="inactive" value="0" checked>';
+                if(info.estado == 1) estado = '<input type="radio" name="estado" id="active" value="1" checked><input type="radio" name="estado" id="inactive" value="0">';
+
+                let admin = '<input type="radio" name="admin" id="active2" value="1"><input type="radio" name="admin" id="inactive2" value="0" checked>';
+                if(info.admin == 1) admin = '<input type="radio" name="admin" id="active2" value="1" checked><input type="radio" name="admin" id="inactive2" value="0">';
+                right.innerHTML = `
+                <ul>
+                        <li><input type="text" value="${info.telefono}" placeholder="${info.telefono}">Télefono</li>
+                        <li><input type="text" value="${info.email}" placeholder="${info.email}"> Email</li>
+                        <li><input type="text" value="${info.direccion}" placeholder="${info.direccion}">Dirección</li>
+                        <li>${estado}<label class="active" for="inactive">Activo</label><label class="inactive" for="active">Inactivo</label>Estado</li>
+                        <li>${admin}<label class="active" for="inactive2">Si</label><label class="inactive" for="active2">No</label>Admin</li>
+                </ul>
+                `;
+            profileCard.append(right);
+            }
+            let options = document.createElement("ul");
+                options.classList.add("options");
+                let li1 = document.createElement("li");
+                    li1.classList.add("icon-edit");
+                    li1.title = "Guardar cambios de la ficha";
+                    //Actualizar cambios realizados a la ficha
+                    clickEventHandler(li1, ()=>{
+                        //Ask for a password confirmation
+                        permisionPop("Actualización de Datos", (pass)=>{
+
+                            let headers = {
+                                headers: {
+                                    'Authorization': "Bearer " + localStorage.getItem("token")
+                                }
+                            };
+                            let data = {
+                                confirmPassword: pass,
+                                token: localStorage.getItem("token")
+                            };
+                            let changes = profileCard.querySelectorAll('input[type="text"], input[type="radio"]:checked');
+                            if(changes.length >= 1) data.nombre = changes[0].value;
+                            if(changes.length >= 2) data.apellidos = changes[1].value;
+                            if(changes.length >= 3) data.telefono = changes[2].value;
+                            if(changes.length >= 4) data.email = changes[3].value;
+                            if(changes.length >= 5) data.direccion = changes[4].value;
+                            if(changes.length >= 6) data.estado = parseInt(changes[5].value);
+                            if(changes.length >= 7) data.admin = parseInt(changes[6].value);
+    
+                            axios.patch('./employee/'+info.idEmpleado, data, headers).then(res => {
+                                console.log(res.data);
+                                setTimeout(()=>{
+                                    const {code, message} = res.data;
+                                    if(code == 200){
+                                        generateNotification(message, "var(--verde)");
+                                    }
+                                    else generateNotification(message, "var(--rojo)");
+                                },300);
+                            });
+
+                        });
+                    });
+                let li2 = document.createElement("li");
+                    li2.classList.add("icon-x");
+                    li2.title = "Eliminar al Empleado";
+                let li3 = document.createElement("li");
+                    li3.classList.add("icon-key");
+                    li3.title = "Cambiar contraseña del Empleado";
+                options.append(li1);
+                options.append(li2);
+                options.append(li3);
+            profileCard.append(options);
+        where.append(profileCard);
     } 
     
 });
