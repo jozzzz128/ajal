@@ -1,3 +1,17 @@
+@media screen and (max-width: 1170px){
+
+    header{
+        background: #191919;
+        position: absolute;
+    }
+
+    #login-content{
+        display: inline-block;
+        margin-top: 50px;
+    }
+
+}
+
 @media screen and (max-width: 930px) {
 
     body{
@@ -41,7 +55,32 @@
 
 }
 
-@media screen and (max-width: 640px) {
+@media screen and (max-width: 790px) {
+
+    #login-content .profile{
+        min-width: 0px;
+    }
+
+    #login-content .profile .profile-card{
+        position: relative;
+    }
+
+    #login-content .profile .profile-card .options{
+        position: absolute;
+        bottom: 100%;
+        right: 0px;
+        margin-bottom: 18px;
+    }
+
+    #login-content .profile .profile-card .options li{
+        display: inline-block;
+        margin: 0px;
+        margin-left: 15px;
+    }
+
+}
+
+@media screen and (max-width: 660px) {
 
     body{
         padding: 0px;
@@ -59,6 +98,25 @@
 
     body .form .cont .thumb h2{
         text-align: center;
+    }
+
+    header .cont .options{
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    #login-content{
+        display: inline-block;
+        margin-top: 200px;
+    }
+
+    #login-content .profile .profile-card{
+        display: inline-block;
+        height: auto;
+    }
+
+    #login-content .profile .profile-card .left{
+        max-width: 100%;
     }
 
 }
@@ -79,6 +137,22 @@
 
     body .form .cont .info{
         margin-top: 0px;
+    }
+
+    #login-content{
+        margin-top: 150px;
+    }
+
+    #login-content .profile h2{
+        margin-bottom: 80px;
+    }
+
+    #permition-prompt{
+        overflow: hidden;
+    }
+
+    #permition-prompt .content{
+        padding: 20px;
     }
 
 }

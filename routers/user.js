@@ -11,8 +11,6 @@ user.get("/", async (req, res) => {
 
 user.post("/register", async (req, res) => {
     const { nombre, apellidos, telefono, email, direccion, estado, admin, password } = req.body;
-    console.log(req.body);
-
     if(nombre && apellidos && telefono && email && direccion && estado && admin && password)
     {
         try {

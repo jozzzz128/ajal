@@ -645,7 +645,7 @@ window.addEventListener("load", async ()=>{
                                         if(!activeSearch) ajaxSearch(val);
                                     },300);
                                 }else{
-                                    generateSearchResults([]);
+                                    generateSearchResults([], false);
                                 }
                             });
                             input.addEventListener("focus", ()=>{
@@ -905,43 +905,45 @@ window.addEventListener("load", async ()=>{
         });
     }
     //Generate Search Results
-    function generateSearchResults(results){
+    function generateSearchResults(results, flag = true){
         let searchContainer = document.querySelector("#login-content .search .center .results");
             searchContainer.classList.add("close");
             setTimeout(()=>{
                 searchContainer.innerHTML = '';
                 setTimeout(()=>{
-                    results.forEach(elem => {
-                        let result = document.createElement("article");
-                            clickEventHandler(result, ()=>{
-                                //Obtener información y generar ficha de empleado por ID
-                                let headers = {
-                                    headers: {
-                                        'Authorization': "Bearer " + localStorage.getItem("token")
+                    if(results.length != 0){
+                        results.forEach(elem => {
+                            let result = document.createElement("article");
+                                clickEventHandler(result, ()=>{
+                                    //Obtener información y generar ficha de empleado por ID
+                                    let headers = {
+                                        headers: {
+                                            'Authorization': "Bearer " + localStorage.getItem("token")
+                                        }
                                     }
-                                }
-                                axios.post('./employee/', {id: elem.idEmpleado}, headers).then(res => {
-                                    if(res.data.code == 200){
-                                        //Create Full Login
-                                        generateCard(res.data.employee[0]);
-                                        handleScrollBar(false);
-                                    }
-                                    else{
-                                        generateNotification(res.data.message,"var(--rojo)");
-                                    } 
+                                    axios.post('./employee/', {id: elem.idEmpleado}, headers).then(res => {
+                                        if(res.data.code == 200){
+                                            //Create Full Login
+                                            generateCard(res.data.employee[0]);
+                                            handleScrollBar(false);
+                                        }
+                                        else{
+                                            generateNotification(res.data.message,"var(--rojo)");
+                                        } 
+                                    });
                                 });
-                            });
-                            result.innerHTML = `
-                                <div class="thumb">
-                                    <span class="icon-user"></span>
-                                </div>
-                                <div class="info">
-                                    ${elem.nombre} ${elem.apellidos}
-                                    <span>${elem.email}</span>
-                                </div>
-                            `;
-                        searchContainer.append(result);
-                    });
+                                result.innerHTML = `
+                                    <div class="thumb">
+                                        <span class="icon-user"></span>
+                                    </div>
+                                    <div class="info">
+                                        ${elem.nombre} ${elem.apellidos}
+                                        <span>${elem.email}</span>
+                                    </div>
+                                `;
+                            searchContainer.append(result);
+                        });
+                    }else if(flag) searchContainer.innerHTML = '<p>No se encontraron resultados para la busqueda</p>';
                     setTimeout(()=>{
                         searchContainer.classList.remove("close");
                     },300);

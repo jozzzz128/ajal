@@ -30,7 +30,7 @@ emplo.post("/search", async (req, res) => {
         //Validaciones
         if(rows[0].admin != 1) return res.status(200).json({ code:409, message: 'No tienes permisos suficientes para realizar esta operación'});
         if(!search) return res.status(200).json({ code:409, message: 'Falta incluir el parametro de busqueda'});
-        query = `SELECT idEmpleado, nombre, apellidos, email FROM empleados WHERE nombre LIKE '%${search}%' OR apellidos LIKE '%${search}%' OR telefono LIKE '%${search}%' OR email LIKE '%${search}%' OR email LIKE '%${search}%' OR direccion LIKE '%${search}%';`;
+        query = `SELECT idEmpleado, nombre, apellidos, email FROM empleados WHERE nombre LIKE '%${search}%' AND idEmpleado != ${token.idEmpleado} OR apellidos LIKE '%${search}%' AND idEmpleado != ${token.idEmpleado} OR telefono LIKE '%${search}%' AND idEmpleado != ${token.idEmpleado} OR email LIKE '%${search}%' AND idEmpleado != ${token.idEmpleado} OR email LIKE '%${search}%' AND idEmpleado != ${token.idEmpleado} OR direccion LIKE '%${search}%' AND idEmpleado != ${token.idEmpleado};`;
         rows = await db.query(query);
         return res.status(200).json({ code:200, message: 'Busqueda exitosa', employees: rows});
     } catch (error) {
@@ -42,49 +42,26 @@ emplo.post("/search", async (req, res) => {
 //Actualizar la informacion de un empleado
 emplo.patch("/:id([0-9]{1,3})", async(req, res) => {
     const {nombre, apellidos, telefono, email, direccion, estado, admin, password, confirmPassword} = req.body;
-    if(!nombre && !apellidos && !telefono && !email && !direccion && !estado && !admin && !password && !confirmPassword || !confirmPassword) return res.status(200).json({ code: 500, message: "Campos incompletos" });
+    if(!nombre && !apellidos && !telefono && !email && !direccion && !estado && !admin && !password && !confirmPassword) return res.status(200).json({ code: 500, message: "Campos incompletos" });
     let rows;
     try{
         const decoded = jwt.verify(req.headers.authorization.split(" ")[1], "debugkey");
         const query = "SELECT admin FROM empleados WHERE idEmpleado = "+decoded.idEmpleado+" AND password = '"+hash(confirmPassword)+"'";
         rows = await db.query(query);
-        if(req.params.id != decoded.idEmpleado && rows[0].admin != 1) return res.status(200).json({ code: 409, message: "No tienes autorización para realizar esta operacion" });
+        if(rows[0].admin != 1) return res.status(200).json({ code: 409, message: "No tienes autorización para realizar esta operacion" });
     } catch(e){
         return res.status(200).json({ code: 409, message: "Ocurrio un error al verificar la autenticidad del usuario" });
     }
     try {
         //Campos a Actualizar
-        if(nombre){
-            let query = `UPDATE empleados SET nombre='${nombre}' WHERE idEmpleado=${req.params.id};`;
-            rows = await db.query(query);
-        }
-        if(apellidos){
-            let query = `UPDATE empleados SET apellidos='${apellidos}' WHERE idEmpleado=${req.params.id};`;
-            rows = await db.query(query);
-        }
-        if(telefono){
-            let query = `UPDATE empleados SET telefono='${telefono}' WHERE idEmpleado=${req.params.id};`;
-            rows = await db.query(query);
-        }
-        if (email){
-            let query = `UPDATE empleados SET email='${email}' WHERE idEmpleado=${req.params.id};`;
-            rows = await db.query(query);
-        }
-        if(direccion){
-            let query = `UPDATE empleados SET direccion='${direccion}' WHERE idEmpleado=${req.params.id};`;
-            rows = await db.query(query);
-        }
-        if(estado){
-            let query = `UPDATE empleados SET estado='${estado}' WHERE idEmpleado=${req.params.id};`;
-            rows = await db.query(query);
-        }
-        if(admin){
-            let query = `UPDATE empleados SET admin='${admin}' WHERE idEmpleado=${req.params.id};`;
+        if(email){
+            let query = `UPDATE empleados SET nombre='${nombre}', apellidos='${apellidos}', telefono='${telefono}', email='${email}', direccion='${direccion}', estado='${estado}', admin='${admin}' WHERE idEmpleado=${req.params.id};`;
             rows = await db.query(query);
         }
         if(password){
             let query = `UPDATE empleados SET password='${hash(password)}' WHERE idEmpleado=${req.params.id};`;
             rows = await db.query(query);
+            console.log(rows);
         }
         if(rows.affectedRows != 1) return res.status(200).json({ code: 500, message: "Ocurrio un error" });
     }catch(e){

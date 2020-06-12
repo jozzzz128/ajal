@@ -566,6 +566,10 @@ header .cont .options{
     background: #555; 
 }
 
+#login-content .search .results p{
+    animation: fadeIn 0.2s linear;
+}
+
 #login-content .search .results article{
     width: 100%;
     padding: 10px 15px;
@@ -635,7 +639,7 @@ header .cont .options{
 }
 
 #permition-prompt .content{
-    width: 100%;
+    width: 90%;
     max-width: 400px;
     padding: 40px;
     border: 5px solid #ccc;
