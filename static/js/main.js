@@ -11,6 +11,7 @@ window.addEventListener("load", async ()=>{
             url: './user/',
             data: {}
         });
+        console.log(db.data);
         if(db.data.code == 0) createDBform();
         else{
             const session = localStorage.getItem('token');
